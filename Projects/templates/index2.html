@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI GPT-3.5 Turbo Chat</title>
+    <style>
+        /* Add custom styles for the container */
+        #container {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            border: 7px solid red; /* Decreased border size by 5px */
+            padding: 10px;
+            width: fit-content;
+            text-align: left;
+            transition: height 2s ease-in-out, border-radius 2s ease-in-out;
+        }
+
+        /* Add custom styles for the chat-box */
+        #chat-box {
+            text-align: left;
+            transition: display 2s ease-in-out;
+        }
+
+        /* Add custom styles for the toggle button */
+        #toggle-btn {
+            cursor: pointer;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* Add custom styles for the conversation container */
+        #conversation-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Add custom styles for the message labels */
+        .label {
+            font-weight: bold; /* Make the label text bold */
+        }
+
+        /* Add custom styles for each message in the conversation */
+        .message {
+            margin-bottom: 10px;
+            clear: both;
+        }
+
+        .user-message {
+            background-color: #007bff;
+            color: #fff;
+            padding: 8px;
+            border-radius: 5px;
+            display: inline-block;
+            float: left;
+        }
+
+        .response-message {
+            background-color: #28a745;
+            color: #fff;
+            padding: 8px;
+            border-radius: 5px;
+            display: inline-block;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <button id="toggle-btn" onclick="toggleChat()">+</button>
+        <div id="chat-box">
+            <div id="conversation-container" class="message-container">
+                <!-- Conversation messages will be displayed here -->
+            </div>
+            <form id="inputForm">
+                <label class="label" for="user_input">Enter your message:</label>
+                <input type="text" id="user_input" name="user_input" required>
+                <button type="button" onclick="getResponse()">Get Response</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            var container = document.getElementById("container");
+            var chatBox = document.getElementById("chat-box");
+
+            if (container.style.height === "50px") {
+                container.style.height = "fit-content";
+                container.style.borderRadius = "10px";
+                chatBox.style.display = "block";
+            } else {
+                container.style.height = "50px";
+                container.style.borderRadius = "50%";
+                setTimeout(function(){ chatBox.style.display = "none"; }, 1000);
+            }
+        }
+
+        function getResponse() {
+            var user_input = document.getElementById("user_input").value;
+            var conversationContainer = document.getElementById("conversation-container");
+
+            // Add user message to the conversation
+            var userMessage = document.createElement('div');
+            userMessage.classList.add('message', 'user-message');
+            userMessage.textContent = 'User: ' + user_input;
+            conversationContainer.appendChild(userMessage);
+
+            fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'user_input=' + encodeURIComponent(user_input),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Add GPT response to the conversation
+                var responseMessage = document.createElement('div');
+                responseMessage.classList.add('message', 'response-message');
+                responseMessage.textContent = 'GPT: ' + data.response_message;
+                conversationContainer.appendChild(responseMessage);
+
+                // Scroll to the bottom of the conversation container
+                conversationContainer.scrollTop = conversationContainer.scrollHeight;
+            })
+            .catch(error => console.error('Error:', error));
+
+            // Clear user input after sending the message
+            document.getElementById("user_input").value = '';
+        }
+    </script>
+</body>
+</html>
