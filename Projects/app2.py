@@ -5,7 +5,7 @@ import traceback
 app = Flask(__name__)
 
 # OpenAI API key (replace with your actual key)
-api_key = "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"
+api_key = ""
 client = OpenAI(api_key=api_key)
 
 @app.route('/')
